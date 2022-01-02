@@ -1,3 +1,3 @@
 EXPLORER_API_KEY = {
-    "avalanche": "KEV93B2FGT1RKAX96UVIWDYP7Z9K6HEQ4C"
+    "avalanche": "YOUR_API_KEY"
 }
