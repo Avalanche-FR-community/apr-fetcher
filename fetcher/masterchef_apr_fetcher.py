@@ -150,6 +150,7 @@ def farm_list_sorted_by_apr_from_masterchef(masterchef_address, blockchain, toke
     return sorted(farms, key=lambda x: x["apr"], reverse=True)
     
 if __name__ == "__main__":
+    print("test")
     print(farm_list_sorted_by_apr_from_masterchef("0x64aB872a2937dE057F21c8e0596C0175FF2084d8", "avalanche", "banksy", "banksyPerBlock"))
     
     
