@@ -7,10 +7,6 @@ from typing import Dict, List, Union
 import urllib.request
 from pprint import pprint
 
-NAME_PER_ADDRESS = {
-    "0x969BC610C2237B2131595C1ED0e96233Fc5e1832": "AVAX-XAVA (PANGOLIN)"
-}
-
 class BeefyAPRFetcher(APIAPRFetcher):
     """
         Interface for apr fetcher
@@ -31,10 +27,8 @@ class BeefyAPRFetcher(APIAPRFetcher):
         tvl_data = {}
         if tvl_raw_data != {}:
             for _, d in tvl_raw_data.items():
-                print(tvl_raw_data)
                 for k, v in d.items():
                     tvl_data[k] = v
-        pprint(tvl_data)
         d = []
         web3 = Web3(Web3.HTTPProvider(blockchain_urls["avalanche"]))
         for id, infos in data.items():
