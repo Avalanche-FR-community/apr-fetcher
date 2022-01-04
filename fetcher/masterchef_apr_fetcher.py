@@ -9,76 +9,7 @@ from web3.middleware import geth_poa_middleware
 from config import EXPLORER_API_KEY
 
 
-blockchain_urls = {
-    "avalanche": "https://api.avax.network/ext/bc/C/rpc",
-}
 
-explorer_api_link_per_blockchain = {
-    "avalanche": "https://api.snowtrace.io/api?module=contract&action=getabi&address=[POOL_ABI]&apikey=[API_KEY]",
-}
-
-dex_factories = {
-    "trader_joe": "0x9ad6c38be94206ca50bb0d90783181662f0cfa10",
-    "pangolin": "0xefa94de7a4656d787667c749f7e1223d71e9fd88"
-}
-
-usdt_address = {
-    "avalanche": "0xc7198437980c041c805a1edcba50c1ce5db95118"
-}
-
-def open_contract(web3, blockchain, address):
-    link = explorer_api_link_per_blockchain[blockchain].replace("[POOL_ABI]", address).replace("[API_KEY]", EXPLORER_API_KEY[blockchain])
-    addressABI = json.loads(urllib.request.urlopen(link).read())["result"]
-    return web3.eth.contract(address=web3.toChecksumAddress(address), abi=addressABI)
-    
-
-def getBlockAverageTime(web3, span=100):
-    times = []
-    current_number = web3.eth.block_number
-    try:
-        first_block = web3.eth.get_block(current_number - span)
-    except web3_module.exceptions.ExtraDataLengthError:
-        web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-        first_block = web3.eth.get_block(current_number - span)
-    prev_timestamp = first_block.timestamp
-    average_time = 0
-
-    for i in range(current_number - span + 1, current_number):
-        block = web3.eth.get_block(i)
-        time = block.timestamp - prev_timestamp
-        prev_timestamp = block.timestamp
-        average_time += time/span
-    
-
-    return average_time
-    
-    
-def calculate_token_price(web3, blockchain, pool_address, source_token_address):
-    liquidityContract = open_contract(web3, blockchain, pool_address)
-    reserves = liquidityContract.functions.getReserves().call()
-    reserveToken0 = reserves[0]
-    reserveToken1 = reserves[1]
-    token0Address = liquidityContract.functions.token0().call()
-    token1Address = liquidityContract.functions.token1().call()
-    token0 = open_contract(web3, blockchain, token0Address)
-    token1 = open_contract(web3, blockchain, token1Address)
-    token0Decimals = token0.functions.decimals().call()
-    token1Decimals = token1.functions.decimals().call()
-    if token0Address == source_token_address:
-        price = (reserveToken1 * 10**-token1Decimals) / (reserveToken0 * 10**-token0Decimals)
-    else :
-        price = (reserveToken0 * 10**-token0Decimals) / (reserveToken1 * 10**-token1Decimals)
-    return price
-
-    
-def get_token_price_from_dexs(web3, blockchain, dex_factories, token_address, stable_address):
-    for dex_factory in dex_factories:
-        dex_factory_contract = open_contract(web3, blockchain, dex_factory)
-        pair_address = dex_factory_contract.functions.getPair(web3.toChecksumAddress(token_address), web3.toChecksumAddress(stable_address)).call()
-        try:
-            return calculate_token_price(web3, blockchain, pair_address, token_address)
-        except Exception:
-            continue
  
 
 def farm_list_sorted_by_apr_from_masterchef(masterchef_address, blockchain, token_dapp_address_function, token_per_block_function):
@@ -91,7 +22,7 @@ def farm_list_sorted_by_apr_from_masterchef(masterchef_address, blockchain, toke
     total_alloc_point = masterchef_contract.functions.totalAllocPoint().call()
     tokenContract = open_contract(web3, blockchain, token_address)
     decimals = tokenContract.functions.decimals().call()
-    average_time_per_block_seconds = getBlockAverageTime(web3, span=200)
+    average_time_per_block_seconds = get_block_average_time(web3, span=200)
     block_per_seconds = 1.0 / average_time_per_block_seconds
     block_per_year = block_per_seconds * 3600 * 24 * 365
     token_per_block = getattr(masterchef_contract.functions, token_per_block_function)().call()

@@ -1,3 +1,4 @@
-from fetcher import yak, masterchef_apr_fetcher
+from fetcher.apr_fetchers import fetchers
 
-yak.get_aprs()
+for fetcher_name, fetcher in fetchers.items():
+    print(fetcher.pool_aprs(sorted_by_apr_desc=False))
