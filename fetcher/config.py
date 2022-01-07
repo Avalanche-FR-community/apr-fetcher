@@ -1,3 +1,4 @@
 EXPLORER_API_KEY = {
-    "avalanche": "YOUR_API_KEY"
+    "avalanche": "KEV93B2FGT1RKAX96UVIWDYP7Z9K6HEQ4C",
+    "binance_smart_chain": "73FG1ENJ87PTFGC3N28JJ6JQMR2ZJZDEEZ"
 }

@@ -3,7 +3,16 @@ from .apr_fetcher import APRFetcher
 from typing import Dict, List, Union, Any
 import urllib.request
 import json
-from .utils.utils import get_block_average_time, get_token_price_from_dexs, open_contract, usdt_address
+from .utils.utils import (
+    calculate_lp_token_price,
+    get_token_price_from_dexs,
+    open_contract,
+    usdt_address,
+    platform_name_mapping,
+    decimals_mapping,
+    symbol_mapping
+)
+
 
 class DappAPRFetcher(APRFetcher):
     """
@@ -15,7 +24,7 @@ class DappAPRFetcher(APRFetcher):
         self._blockchain = blockchain
 
     @abstractmethod
-    def pools_infos(self, web3) -> List[Dict[str, Union[str, float]]]:
+    def dapp_pools_infos(self, web3) -> List[Dict[str, Union[str, float]]]:
         raise NotImplementedError()
 
     @abstractmethod
@@ -23,67 +32,75 @@ class DappAPRFetcher(APRFetcher):
         raise NotImplementedError()
 
     @abstractmethod
-    def dapp_token_per_block(self, web3) -> float:
+    def dapp_token_per_year(self, web3) -> float:
         raise NotImplementedError()
 
     @abstractmethod
     def dapp_token_total_alloc(self, web3) -> List[Dict[str, Union[str, float]]]:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def dapp_token_price(self, web3) -> float:
         raise NotImplementedError()
     
     def pool_aprs(self, sorted_by_apr_desc=True) -> List[Dict[str, Union[int, float, str]]]:
         """
             TBW
         """
-        average_time_per_block_seconds = get_block_average_time(self._web3, span=200)
-        block_per_seconds = 1.0 / average_time_per_block_seconds
-        block_per_year = block_per_seconds * 3600 * 24 * 365
-        token_per_block = self.dapp_token_per_block(self._web3)
-        token_address = self.dapp_token_address()
-        token_contract = open_contract(self._web3, self._blockchain, token_address)
-        decimals = token_contract.functions.decimals().call()
-        annual_token_emission = block_per_year * (token_per_block/(10**decimals))
+        price_token = self.dapp_token_price(self._web3)
+        annual_token_emission = self.dapp_token_per_year(self._web3)
         farms = []
-        for pool_info in self._pools_infos(self._web3):
+        dapp_pools_infos = self.dapp_pools_infos(self._web3)
+        total_alloc = self.dapp_token_total_alloc(self._web3)
+        # Compute price of the dapp token
+        for pool_info in dapp_pools_infos:
             total_staked = pool_info["total_staked"]
             pool_address = pool_info["pool_address"]
             alloc_point = pool_info["alloc_point"]
+            if alloc_point == 0:
+                continue
             # Compute infos about pool (emission share and reward amount per year)
-            pool_emission_share = alloc_point / self.dapp_token_total_alloc(self._web3)
+            pool_emission_share = alloc_point / total_alloc
             pool_reward_amount_per_year = annual_token_emission * pool_emission_share
-            # Compute price of the dapp token
-            price_token = get_token_price_from_dexs(self._web3, self._blockchain, token_address)
             
             # Get price and decimals of a single-asset or LP token
             pool_contract = open_contract(self._web3, self._blockchain, pool_address)
             if "token0" not in dir(pool_contract.functions):
-                token0Symbol = pool_contract.functions.symbol().call()
-                token1Symbol = pool_contract.functions.symbol().call()
+                if "symbol" in dir(pool_contract.functions):
+                    token0_symbol = pool_contract.functions.symbol().call()
+                    token1_symbol = pool_contract.functions.symbol().call()
+                else:
+                    token0_symbol = symbol_mapping.get(pool_address, pool_address)
+                    token1_symbol = symbol_mapping.get(pool_address, pool_address)
                 LPToken_price = get_token_price_from_dexs(self._web3, self._blockchain, pool_address) if pool_address.lower() != usdt_address[self._blockchain].lower() else 1
-                LPToken_decimals = pool_contract.functions.decimals().call()
+                platform = ""
             else:
-                token0Address = pool_contract.functions.token0().call()
-                token1Address = pool_contract.functions.token1().call()
-                token0 = open_contract(self._web3, self._blockchain, token0Address)
-                token1 = open_contract(self._web3, self._blockchain, token1Address)
-                token_0_price = get_token_price_from_dexs(self._web3, self._blockchain, token0Address) if token0Address.lower() != usdt_address[self._blockchain].lower() else 1
-                token_1_price = get_token_price_from_dexs(self._web3, self._blockchain, token1Address) if token1Address.lower() != usdt_address[self._blockchain].lower() else 1
-                token0Decimals = token0.functions.decimals().call()
-                token1Decimals = token1.functions.decimals().call()
-                token0Symbol = token0.functions.symbol().call()
-                token1Symbol = token1.functions.symbol().call()
-                reserves = pool_contract.functions.getReserves().call()
-                reserveToken0 = reserves[0]*10**-(token0Decimals)
-                reserveToken1 = reserves[1]*10**-(token1Decimals)
-                totalSupply = pool_contract.functions.totalSupply().call()*10**-pool_contract.functions.decimals().call()
-                componentLPToken0 = reserveToken0 / totalSupply
-                componentLPToken1 = reserveToken1 / totalSupply
-                LPToken_price = componentLPToken0 * token_0_price + componentLPToken1 * token_1_price
-                LPToken_decimals = pool_contract.functions.decimals().call()
-            # Finally, compute farm APR   
+                token0_address = pool_contract.functions.token0().call()
+                token1_address = pool_contract.functions.token1().call()
+                try:
+                    token0 = open_contract(self._web3, self._blockchain, token0_address)
+                    if "symbol" in dir(token0.functions):
+                        token0_symbol = token0.functions.symbol().call()
+                    else:
+                        token0_symbol = symbol_mapping.get(token0_address.lower(), token0_address.lower())
+                except:
+                    token0_symbol = symbol_mapping.get(token0_address.lower(), token0_address.lower())
+
+                try:
+                    token1 = open_contract(self._web3, self._blockchain, token1_address)
+                    if "symbol" in dir(token1.functions):
+                        token1_symbol = token1.functions.symbol().call()
+                    else:
+                        token1_symbol = symbol_mapping.get(token1_address.lower(), token1_address.lower())
+                except:
+                    token1_symbol = symbol_mapping.get(token1_address.lower(), token1_address.lower())
+                LPToken_price = calculate_lp_token_price(self._web3, self._blockchain, pool_address, opened_contract=pool_contract)
+                platform = platform_name_mapping.get(pool_contract.functions.symbol().call(), pool_contract.functions.symbol().call())
+            # Finally, compute farm APR
             pool_reward_value_per_year = price_token * pool_reward_amount_per_year
-            total_value_locked = (total_staked*10**-LPToken_decimals) * LPToken_price
-            apr = pool_reward_value_per_year*100/total_value_locked
-            token_symbol_tuple = token0Symbol+"/"+token1Symbol if token0Symbol != token1Symbol else token0Symbol
+            total_value_locked = max(1, total_staked * LPToken_price)
+            apr = ((pool_reward_value_per_year/total_value_locked))*100
+            token_symbol_tuple = (token0_symbol+"/"+token1_symbol if token0_symbol != token1_symbol else token0_symbol) + (f"({platform})" if platform != "" else "")
             dict_farm = {
                 "pair": token_symbol_tuple,
                 "apr": apr,

@@ -73,7 +73,8 @@ class YieldYakAPRFetcher(APIAPRFetcher):
                 {
                     "pair": name,
                     "apr": float(infos["apr"]),
-                    "tvl": max(tvl, -1)
+                    "tvl": max(tvl, -1),
+                    "infos": {}
                 }
             )
         return d

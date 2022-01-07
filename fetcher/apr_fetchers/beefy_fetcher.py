@@ -1,7 +1,7 @@
 from web3.main import Web3
 from ..api_apr_fetcher import APIAPRFetcher
 import json
-from ..utils.utils import blockchain_urls, get_token_price_from_dexs, open_contract, blockchain_native_token_address
+from ..utils.utils import blockchain_urls, calculate_lp_token_price, get_token_price_from_dexs, open_contract, blockchain_native_token_address
 import warnings
 from typing import Dict, List, Union
 import urllib.request
@@ -52,19 +52,7 @@ class BeefyAPRFetcher(APIAPRFetcher):
                         web3, "avalanche", token_address
                     )
                     total_vault_supply = earn_contract.functions.balance().call() * 10**(-lp_contract.functions.decimals().call())
-                    address_token_0_lp = lp_contract.functions.token0().call()
-                    address_token_1_lp = lp_contract.functions.token1().call()
-                    token0 = open_contract(web3, "avalanche", address_token_0_lp)
-                    token1 = open_contract(web3, "avalanche", address_token_1_lp)
-                    token0_decimals = token0.functions.decimals().call()
-                    token1_decimals = token1.functions.decimals().call()
-                    reserves_lp = lp_contract.functions.getReserves().call()
-                    reserves_token_0 = reserves_lp[0] * 10**(-token0_decimals)
-                    reserves_token_1 = reserves_lp[1] * 10**(-token1_decimals)
-                    total_lp_supply = lp_contract.functions.totalSupply().call() * 10**(-lp_contract.functions.decimals().call())
-                    price_token_0 = get_token_price_from_dexs(web3, "avalanche", address_token_0_lp)
-                    price_token_1 = get_token_price_from_dexs(web3, "avalanche", address_token_1_lp)
-                    price_lp_token = (reserves_token_0*price_token_0/total_lp_supply) + (reserves_token_1*price_token_1/total_lp_supply)
+                    price_lp_token = calculate_lp_token_price(web3, "avalanche", token_address, opened_contract=lp_contract)
                 elif len(complete_data[id]["assets"]) > 2:
                     total_vault_supply = earn_contract.functions.balance().call() * 10**(-earn_contract.functions.decimals().call())
                     price_lp_token = 1
@@ -85,7 +73,8 @@ class BeefyAPRFetcher(APIAPRFetcher):
                 {
                     "pair": name,
                     "apr": ((float(vaultApr) + float(tradingApr)) if vaultApr != -1 else float(totalApy))*100,
-                    "tvl": max(tvl, -1)
+                    "tvl": max(tvl, -1),
+                    "infos": {}
                 }
             )
         return d

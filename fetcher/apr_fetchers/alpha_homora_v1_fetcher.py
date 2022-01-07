@@ -22,14 +22,14 @@ class AlphaHomoraAPRFetcher(APIAPRFetcher):
         for infos in data["pools"]:
             name = infos["name"].split(" ")
             name = name[1] + f"({name[0].lower()})"
-            print(infos)
             apr = float(infos["apr"])
             tvl = float(infos["totalStakedUSD"])
             d.append(
                 {
                     "pair": name,
                     "apr": apr,
-                    "tvl": max(tvl, -1)
+                    "tvl": max(tvl, -1),
+                    "infos": {}
                 }
             )
         return d

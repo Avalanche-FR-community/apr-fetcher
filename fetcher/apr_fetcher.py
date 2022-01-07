@@ -14,6 +14,7 @@ class APRFetcher(ABC):
             "pair": str, gives the name of the pair (or single asset)
             "apr": float, gives the apr of the pool (in %)
             "tvl": float, gives the total value locked (in USDT)
+            "infos": dict[str, float|str], might be empty or give additional informations on the pool
             Parameters
             ----------
             sorted_by_apr_desc: bool
