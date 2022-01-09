@@ -14,12 +14,12 @@ from .stakedao_fetcher import StakeDAOAPRFetcher
 from .pangolinv2_fetcher import PangolinV2APRFetcher
 
 fetchers = {
-    #"yieldyak": YieldYakAPRFetcher(),
-    #"beefy": BeefyAPRFetcher(),
-    #"alpha_homora_v1": AlphaHomoraAPRFetcher(),
-    #"boofi": BoofiAPRFetcher(),
-    #"swift": SwiftAPRFetcher(),
-    #"yetiswap": YetiswapAPRFetcher(),
-    #"stakedao": StakeDAOAPRFetcher(),
+    "yieldyak": YieldYakAPRFetcher(),
+    "beefy": BeefyAPRFetcher(),
+    "alpha_homora_v1": AlphaHomoraAPRFetcher(),
+    "boofi": BoofiAPRFetcher(),
+    "swift": SwiftAPRFetcher(),
+    "yetiswap": YetiswapAPRFetcher(),
+    "stakedao": StakeDAOAPRFetcher(),
     "pangolin": PangolinV2APRFetcher()
 }
