@@ -14,13 +14,13 @@ class SwiftAPRFetcher(MasterchefAPRFetcher):
         super().__init__("avalanche", Web3(Web3.HTTPProvider(blockchain_urls["avalanche"])))
 
     def masterchef_address(self):
-        return "0x9A03B68b86C06f4cf29530a0780D68FBe01E9aC6"
+        return "0x242c27C5F92e20d70CA0dAA7b76d927DFC7EF20B"
 
     def dapp_token_address_field(self):
         return "swiftToken"
 
-    def dapp_token_per_block_field(self):
-        return "swiftPerBlock"
+    def dapp_token_per_block_or_per_second_field(self, per_block: bool):
+        return "swiftPerBlock" if per_block else ""
 
     def _total_staked(self, pool_info):
         pool_contract = open_contract(self._web3, self._blockchain, self._pool_address(pool_info))

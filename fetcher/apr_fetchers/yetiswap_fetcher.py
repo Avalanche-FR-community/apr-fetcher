@@ -34,7 +34,7 @@ class YetiswapAPRFetcher(DappAPRFetcher):
     def dapp_pools_infos(self, web3) -> List[Dict[str, Union[str, float]]]:
         return [
             {
-                "total_staked": p_contract.functions.totalSupply().call() * 10**-open_contract(self._web3, self._blockchain, self.dapp_token_address(web3)).functions.decimals().call(),
+                "total_staked": p_contract.functions.totalSupply().call() * 10**-open_contract(self._web3, self._blockchain, p_contract.functions.stakingToken().call()).functions.decimals().call(),
                 "pool_address": p_contract.functions.stakingToken().call(),
                 "alloc_point": self._liqpoolmanager_contract.functions.rewardAmount(self._web3.toChecksumAddress(p)).call(),
             } for p, p_contract in self._pools.items()

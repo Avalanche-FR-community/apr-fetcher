@@ -55,7 +55,19 @@ decimals_mapping = {
 
 symbol_mapping = {
     "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e": "USDC",
-    "0x4e840aadd28da189b9906674b4afcb77c128d9ea": "SISTA"
+    "0x4e840aadd28da189b9906674b4afcb77c128d9ea": "SISTA",
+    "0xb27c8941a7df8958a1778c0259f76d1f8b711c35": "KLO",
+    "0x9e037de681cafa6e661e6108ed9c2bd1aa567ecd": "WALBT",
+    "0x938fe3788222a74924e062120e7bfac829c719fb": "APEIN",
+    "0x027dbca046ca156de9622cd1e2d907d375e53aa7": "AMPL",
+    "0x1c20e891bab6b1727d14da358fae2984ed9b59eb": "TUSD",
+    "0x01c2086facfd7aa38f69a6bd8c91bef3bb5adfca": "YAY",
+    "0xa384bc7cdc0a93e686da9e7b8c0807cd040f4e0b": "WOW",
+    "0xea6887e4a9cda1b77e70129e5fba830cdb5cddef": "IMX.a",
+    "0x544c42fbb96b39b21df61cf322b5edc285ee7429": "INSUR",
+    "0x340fe1d898eccaad394e2ba0fc1f93d27c7b717a": "ORBS",
+    "0x346a59146b9b4a77100d369a3d18e8007a9f46a6": "AVAI",
+    "0x9e3ca00f2d4a9e5d4f0add0900de5f15050812cf": "NFTD"
 }
 
 price_mapping = {}
@@ -67,6 +79,15 @@ token_bridger = {
         "0x4e840aadd28da189b9906674b4afcb77c128d9ea": "0xca6d25c10dad43ae8be0bc2af4d3cd1114583c08"
     }
 }
+
+particular_case_lp_tokens_price = {
+    "tuplets": {
+        "0x0665eF3556520B21368754Fb644eD3ebF1993AD4".lower(): (
+            "0x7f90122BF0700F9E7e1F688fe926940E8839F353", "balances", "underlying_coins", "0x1337bedc9d22ecbe766df105c9623922a27963ec"
+        )
+    }
+}
+
 
 
 def open_contract(web3, blockchain, address):
@@ -221,3 +242,29 @@ def get_token_price_from_dexs(web3, blockchain, token_address, exclude_others_bl
                 if price_mapping[token_address] != -1:
                     return price_mapping[token_address]
     return price_mapping[token_address]
+
+
+def calculate_special_token_price(web3, blockchain, pool_address):
+    global particular_case_lp_tokens_price
+    if pool_address.lower() in particular_case_lp_tokens_price["tuplets"]:
+        tuplet_address, balance_field, underlyingcoin_field, lp_supply_contract = particular_case_lp_tokens_price["tuplets"][pool_address.lower()]
+        lp_contract = open_contract(web3, blockchain, lp_supply_contract)
+        decimals = lp_contract.functions.decimals().call()
+        total_supply = open_contract(web3, blockchain, lp_supply_contract).functions.totalSupply().call() * 10**-decimals
+        tuplet_contract = open_contract(web3, blockchain, tuplet_address)
+        i = 0
+        price = 0
+        while True:
+            try:
+                underlyingcoin_address = getattr(tuplet_contract.functions, underlyingcoin_field)(i).call()
+                underlyingcoin_contract = open_contract(web3, blockchain, underlyingcoin_address)
+                underlyingcoin_decimals = underlyingcoin_contract.functions.decimals().call()
+                underlyingcoin_price = get_token_price_from_dexs(web3, blockchain, underlyingcoin_address)
+                price += ((getattr(tuplet_contract.functions, balance_field)(i).call() * 10**-underlyingcoin_decimals)/total_supply) * underlyingcoin_price
+            except Exception as e:
+                print(type(e))
+                break
+            i += 1
+        print(price)
+        return price
+    #return -1

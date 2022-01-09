@@ -5,6 +5,7 @@ import urllib.request
 import json
 from .utils.utils import (
     calculate_lp_token_price,
+    calculate_special_token_price,
     get_token_price_from_dexs,
     open_contract,
     usdt_address,
@@ -73,6 +74,8 @@ class DappAPRFetcher(APRFetcher):
                     token0_symbol = symbol_mapping.get(pool_address, pool_address)
                     token1_symbol = symbol_mapping.get(pool_address, pool_address)
                 LPToken_price = get_token_price_from_dexs(self._web3, self._blockchain, pool_address) if pool_address.lower() != usdt_address[self._blockchain].lower() else 1
+                if LPToken_price == -1:
+                    LPToken_price = calculate_special_token_price(self._web3, self._blockchain, pool_address)
                 platform = ""
             else:
                 token0_address = pool_contract.functions.token0().call()

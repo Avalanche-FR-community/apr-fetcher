@@ -28,7 +28,7 @@ class MasterchefAPRFetcher(DappAPRFetcher):
         raise NotImplementedError()
 
     @abstractmethod
-    def dapp_token_per_block_field(self):
+    def dapp_token_per_block_or_per_second_field(self, per_block: bool) -> str:
         raise NotImplementedError()
 
     @abstractmethod
@@ -53,26 +53,28 @@ class MasterchefAPRFetcher(DappAPRFetcher):
         for i in range(masterchef_contract.functions.poolLength().call()):
             pool_info = masterchef_contract.functions.poolInfo(i).call()
             d.append({
-                "total_staked": self._total_staked(pool_info),
-                "pool_address": self._pool_address(pool_info),
-                "alloc_point": self._alloc_point(pool_info),
+                "total_staked": self._total_staked(i, pool_info),
+                "pool_address": self._pool_address(i, pool_info),
+                "alloc_point": self._alloc_point(i, pool_info),
             })
         return d
 
     def dapp_token_per_year(self, web3) -> float:
+        field_per_second = self.dapp_token_per_block_or_per_second_field(per_block=False)
         masterchef_contract = open_contract(self._web3, self._blockchain, self.masterchef_address())
         token_contract = open_contract(web3, self._blockchain, self.dapp_token_address(web3))
         decimals = token_contract.functions.decimals().call()
-        average_time_per_block_seconds = get_block_average_time(web3, span=100)
-        block_per_seconds = 1.0 / average_time_per_block_seconds
-        block_per_year = block_per_seconds * 3600 * 24 * 365
-        token_per_block = getattr(masterchef_contract.functions, self.dapp_token_per_block_field())().call()
-        annual_token_emission = block_per_year * (token_per_block/(10**decimals))
+        if field_per_second is None or field_per_second == "":
+            average_time_per_block_seconds = get_block_average_time(web3, span=100)
+            block_per_seconds = 1.0 / average_time_per_block_seconds
+            block_per_year = block_per_seconds * 3600 * 24 * 365
+            token_per_block = getattr(masterchef_contract.functions, self.dapp_token_per_block_field(per_block=True))().call()
+            annual_token_emission = block_per_year * (token_per_block/(10**decimals))
+        else:
+            annual_token_emission = getattr(masterchef_contract.functions, field_per_second)().call() * 10**(-decimals) * 3600 * 24 * 365
         return annual_token_emission
 
     def dapp_token_total_alloc(self, web3) -> List[Dict[str, Union[str, float]]]:
-        #masterchef_contract = open_contract(self._web3, self._blockchain, self.masterchef_address())
-        #return masterchef_contract.functions.totalAllocPoint().call()
         return sum([p["alloc_point"] for p in self.dapp_pools_infos(web3)])
 
     def dapp_token_price(self, web3) -> float:
