@@ -5,7 +5,7 @@ from ..utils.utils import calculate_lp_token_price, open_contract, blockchain_ur
 from ..masterchef_apr_fetcher import MasterchefAPRFetcher
 from pprint import pprint
 
-class PangolinAPRFetcher(MasterchefAPRFetcher):
+class PangolinV2APRFetcher(MasterchefAPRFetcher):
     """
         Interface for apr fetcher
     """

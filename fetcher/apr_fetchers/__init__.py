@@ -11,7 +11,7 @@ from .boofi_fetcher import BoofiAPRFetcher
 from .swift_fetcher import SwiftAPRFetcher
 from .yetiswap_fetcher import YetiswapAPRFetcher
 from .stakedao_fetcher import StakeDAOAPRFetcher
-from .pangolin_fetcher import PangolinAPRFetcher
+from .pangolinv2_fetcher import PangolinV2APRFetcher
 
 fetchers = {
     #"yieldyak": YieldYakAPRFetcher(),
@@ -21,5 +21,5 @@ fetchers = {
     #"swift": SwiftAPRFetcher(),
     #"yetiswap": YetiswapAPRFetcher(),
     #"stakedao": StakeDAOAPRFetcher(),
-    "pangolin": PangolinAPRFetcher()
+    "pangolin": PangolinV2APRFetcher()
 }
