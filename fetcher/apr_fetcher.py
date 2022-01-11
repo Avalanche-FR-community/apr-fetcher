@@ -21,3 +21,6 @@ class APRFetcher(ABC):
             Whether the list is sorted using the apr in descending order
         """
         raise NotImplementedError()
+
+    def __call__(self, sorted_by_apr_desc=True) -> List[Dict[str, Union[int, float, str]]]:
+        return self.pool_aprs(sorted_by_apr_desc=sorted_by_apr_desc)
