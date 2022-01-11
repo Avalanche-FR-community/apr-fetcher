@@ -5,6 +5,7 @@ import json
 import urllib
 import web3 as web3_module
 from web3.middleware import geth_poa_middleware
+import time
 
 blockchain_urls = {
     "avalanche": "https://speedy-nodes-nyc.moralis.io/5dd5cce6646e002a1a9c9272/avalanche/mainnet",
@@ -67,7 +68,9 @@ symbol_mapping = {
     "0x544c42fbb96b39b21df61cf322b5edc285ee7429": "INSUR",
     "0x340fe1d898eccaad394e2ba0fc1f93d27c7b717a": "ORBS",
     "0x346a59146b9b4a77100d369a3d18e8007a9f46a6": "AVAI",
-    "0x9e3ca00f2d4a9e5d4f0add0900de5f15050812cf": "NFTD"
+    "0x9e3ca00f2d4a9e5d4f0add0900de5f15050812cf": "NFTD",
+    "0xf891214fdcf9cdaa5fdc42369ee4f27f226adad6": "IME",
+    "0xe0ce60af0850bf54072635e66e79df17082a1109": "ICE"
 }
 
 price_mapping = {}
@@ -90,12 +93,23 @@ particular_case_lp_tokens_price = {
 
 
 
-def open_contract(web3, blockchain, address):
+def open_contract(web3, blockchain, address, providedABI = None):
     global already_opened_contract
     if web3.toChecksumAddress(address) in already_opened_contract:
         return already_opened_contract[web3.toChecksumAddress(address)]
-    link = explorer_api_link_per_blockchain[blockchain].replace("[POOL_ABI]", address).replace("[API_KEY]", EXPLORER_API_KEY[blockchain])
-    addressABI = json.loads(urllib.request.urlopen(link).read())["result"]
+    while True:
+        if providedABI is None:
+            link = explorer_api_link_per_blockchain[blockchain].replace("[POOL_ABI]", address).replace("[API_KEY]", EXPLORER_API_KEY[blockchain])
+            addressABI = json.loads(urllib.request.urlopen(link).read())["result"]
+        else:
+            addressABI = providedABI
+        if addressABI == "Contract source code not verified":
+            return None
+        elif addressABI == "Max rate limit reached, rate limit of 5/1sec applied":
+            time.sleep(1.0/5.0)
+            continue
+        break
+
     contract = web3.eth.contract(address=web3.toChecksumAddress(address), abi=addressABI)
     already_opened_contract[web3.toChecksumAddress(address)] = contract
     return contract
@@ -262,9 +276,7 @@ def calculate_special_token_price(web3, blockchain, pool_address):
                 underlyingcoin_price = get_token_price_from_dexs(web3, blockchain, underlyingcoin_address)
                 price += ((getattr(tuplet_contract.functions, balance_field)(i).call() * 10**-underlyingcoin_decimals)/total_supply) * underlyingcoin_price
             except Exception as e:
-                print(type(e))
                 break
             i += 1
-        print(price)
         return price
     #return -1

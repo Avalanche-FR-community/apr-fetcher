@@ -75,7 +75,8 @@ class MasterchefAPRFetcher(DappAPRFetcher):
         return annual_token_emission
 
     def dapp_token_total_alloc(self, web3) -> List[Dict[str, Union[str, float]]]:
-        return sum([p["alloc_point"] for p in self.dapp_pools_infos(web3)])
+        total_alloc = sum([p["alloc_point"] for p in self.dapp_pools_infos(web3)])
+        return total_alloc
 
     def dapp_token_price(self, web3) -> float:
         return get_token_price_from_dexs(web3, self._blockchain, self.dapp_token_address(web3))

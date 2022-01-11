@@ -43,7 +43,10 @@ class DappAPRFetcher(APRFetcher):
     @abstractmethod
     def dapp_token_price(self, web3) -> float:
         raise NotImplementedError()
-    
+
+    def adaptAPR(self, i: int, poolInfo: Dict[str, Union[float, int, str]], apr: float):
+        return apr
+
     def pool_aprs(self, sorted_by_apr_desc=True) -> List[Dict[str, Union[int, float, str]]]:
         """
             TBW
@@ -54,7 +57,7 @@ class DappAPRFetcher(APRFetcher):
         dapp_pools_infos = self.dapp_pools_infos(self._web3)
         total_alloc = self.dapp_token_total_alloc(self._web3)
         # Compute price of the dapp token
-        for pool_info in dapp_pools_infos:
+        for i, pool_info in enumerate(dapp_pools_infos):
             total_staked = pool_info["total_staked"]
             pool_address = pool_info["pool_address"]
             alloc_point = pool_info["alloc_point"]
@@ -106,7 +109,7 @@ class DappAPRFetcher(APRFetcher):
             token_symbol_tuple = (token0_symbol+"/"+token1_symbol if token0_symbol != token1_symbol else token0_symbol) + (f"({platform})" if platform != "" else "")
             dict_farm = {
                 "pair": token_symbol_tuple,
-                "apr": apr,
+                "apr": self.adaptAPR(i, pool_info, apr),
                 "tvl": total_value_locked
             }
             farms.append(dict_farm)

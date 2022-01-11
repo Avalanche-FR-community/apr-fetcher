@@ -25,10 +25,8 @@ class YetiswapAPRFetcher(DappAPRFetcher):
         }
         keys = list(self._pools.keys())
         for p in keys:
-            try:
-                self._pools[p] = open_contract(self._web3, self._blockchain, p)
-                self._pools[p].functions.stakingToken().call()
-            except:
+            self._pools[p] = open_contract(self._web3, self._blockchain, p)
+            if self._pools[p] is None:
                 del self._pools[p]
 
     def dapp_pools_infos(self, web3) -> List[Dict[str, Union[str, float]]]:
