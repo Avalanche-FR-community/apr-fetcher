@@ -28,6 +28,7 @@ class APIAPRFetcher(APRFetcher):
         """
         req = Request(self._api_link, headers={'User-Agent': 'Mozilla/5.0'})
         lst = self._pool_aprs_from_api_content(urllib.request.urlopen(req).read())
+        lst = [{**d, **{"additional_aprs": []}} for d in lst]
         if sorted_by_apr_desc:
             return sorted(lst, key=lambda x: x["apr"], reverse=True)
         return lst

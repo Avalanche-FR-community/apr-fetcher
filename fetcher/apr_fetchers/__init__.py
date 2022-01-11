@@ -12,14 +12,14 @@ from .pangolinv2_fetcher import PangolinV2APRFetcher
 from .traderjoe_fetcher import TraderjoeAPRFetcher
 
 fetchers = {
-    "yieldyak": YieldYakAPRFetcher(),
-    "beefy": BeefyAPRFetcher(),
-    "alpha_homora_v1": AlphaHomoraAPRFetcher(),
-    "boofi": BoofiAPRFetcher(),
-    "swift": SwiftAPRFetcher(),
-    "yetiswap": YetiswapAPRFetcher(),
-    "stakedao": StakeDAOAPRFetcher(),
-    "pangolin": PangolinV2APRFetcher(),
+    # "yieldyak": YieldYakAPRFetcher(),
+    # "beefy": BeefyAPRFetcher(),
+    # "alpha_homora_v1": AlphaHomoraAPRFetcher(),
+    # "boofi": BoofiAPRFetcher(),
+    # "swift": SwiftAPRFetcher(),
+    # "yetiswap": YetiswapAPRFetcher(),
+    # "stakedao": StakeDAOAPRFetcher(),
+    # "pangolin": PangolinV2APRFetcher(),
     "traderjoe": TraderjoeAPRFetcher(),
-    "snowball": SnowballAPRFetcher()
+    # "snowball": SnowballAPRFetcher()
 }

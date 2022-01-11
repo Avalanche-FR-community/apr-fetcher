@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from .apr_fetcher import APRFetcher
-from typing import Dict, List, Union, Any
+from typing import Dict, List, Tuple, Union, Any
 import urllib.request
 import json
 from .utils.utils import (
@@ -44,8 +44,8 @@ class DappAPRFetcher(APRFetcher):
     def dapp_token_price(self, web3) -> float:
         raise NotImplementedError()
 
-    def adaptAPR(self, i: int, poolInfo: Dict[str, Union[float, int, str]], apr: float):
-        return apr
+    def additional_aprs(self, i: int, pool_info: Dict[str, Union[float, int, str]]) -> List[Tuple[str, float]]:
+        return []
 
     def pool_aprs(self, sorted_by_apr_desc=True) -> List[Dict[str, Union[int, float, str]]]:
         """
@@ -66,7 +66,6 @@ class DappAPRFetcher(APRFetcher):
             # Compute infos about pool (emission share and reward amount per year)
             pool_emission_share = alloc_point / total_alloc
             pool_reward_amount_per_year = annual_token_emission * pool_emission_share
-            
             # Get price and decimals of a single-asset or LP token
             pool_contract = open_contract(self._web3, self._blockchain, pool_address)
             if "token0" not in dir(pool_contract.functions):
@@ -109,11 +108,11 @@ class DappAPRFetcher(APRFetcher):
             token_symbol_tuple = (token0_symbol+"/"+token1_symbol if token0_symbol != token1_symbol else token0_symbol) + (f"({platform})" if platform != "" else "")
             dict_farm = {
                 "pair": token_symbol_tuple,
-                "apr": self.adaptAPR(i, pool_info, apr),
-                "tvl": total_value_locked
+                "apr": apr,
+                "tvl": total_value_locked,
+                "additional_aprs": [{"pair": reward_token, "apr": apr} for reward_token, apr in self.additional_aprs(i, pool_info)]
             }
             farms.append(dict_farm)
         if sorted_by_apr_desc:
             return sorted(farms, key=lambda x: x["apr"], reverse=True)
         return farms
-        
