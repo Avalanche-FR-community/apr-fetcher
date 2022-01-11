@@ -38,6 +38,8 @@ class TraderjoeAPRFetcher(MasterchefAPRFetcher):
         pool_info_complete = masterchef_contract.functions.poolInfo(i).call()
         rewarder = pool_info_complete[4]
         rewarder_contract = open_contract(self._web3, self._blockchain, rewarder)
+        if rewarder_contract is None:
+            return []
         if rewarder_contract.functions.tokenPerSec().call() == 0:
             return []
         reward_token = rewarder_contract.functions.rewardToken().call()
