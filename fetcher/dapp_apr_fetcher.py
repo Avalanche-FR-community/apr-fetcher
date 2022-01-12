@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from .apr_fetcher import APRFetcher
 from typing import Dict, List, Tuple, Union, Any
-import urllib.request
-import json
 from .utils.utils import (
     calculate_lp_token_price,
     calculate_special_token_price,
@@ -61,8 +59,6 @@ class DappAPRFetcher(APRFetcher):
             total_staked = pool_info["total_staked"]
             pool_address = pool_info["pool_address"]
             alloc_point = pool_info["alloc_point"]
-            if alloc_point == 0:
-                continue
             # Compute infos about pool (emission share and reward amount per year)
             pool_emission_share = alloc_point / total_alloc
             pool_reward_amount_per_year = annual_token_emission * pool_emission_share
@@ -106,11 +102,13 @@ class DappAPRFetcher(APRFetcher):
             total_value_locked = max(1, total_staked * LPToken_price)
             apr = ((pool_reward_value_per_year/total_value_locked))*100
             token_symbol_tuple = (token0_symbol+"/"+token1_symbol if token0_symbol != token1_symbol else token0_symbol) + (f"({platform})" if platform != "" else "")
+            additional_aprs = self.additional_aprs(i, pool_info)
+            # print(token_symbol_tuple, pool_address, total_staked, LPToken_price, total_value_locked, apr)
             dict_farm = {
                 "pair": token_symbol_tuple,
                 "apr": apr,
                 "tvl": total_value_locked,
-                "additional_aprs": [{"pair": reward_token, "apr": apr} for reward_token, apr in self.additional_aprs(i, pool_info)]
+                "additional_aprs": [{"pair": reward_token, "apr": apr} for reward_token, apr in additional_aprs]
             }
             farms.append(dict_farm)
         if sorted_by_apr_desc:

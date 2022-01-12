@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple, Union
 
 from web3.main import Web3
-from ..utils.utils import calculate_lp_token_price, open_contract, blockchain_urls, get_token_price_from_dexs, symbol_mapping
+from ..utils.utils import calculate_lp_token_price, open_contract, blockchain_urls, get_token_price_from_dexs, symbol_mapping, decimals_mapping
 from ..masterchef_apr_fetcher import MasterchefAPRFetcher
 from pprint import pprint
 
@@ -47,14 +47,17 @@ class TraderjoeAPRFetcher(MasterchefAPRFetcher):
         if "symbol" in dir(reward_contract.functions):
             symbol = reward_contract.functions.symbol().call()
         else:
-            symbol = symbol_mapping(reward_token.lower(), reward_token.lower())
-        annual_token_emission = rewarder_contract.functions.tokenPerSec().call() * 3600 * 24 * 365
+            symbol = symbol_mapping.get(reward_token.lower(), reward_token.lower())
+        if "decimals" in dir(reward_contract.functions):
+            decimals = reward_contract.functions.decimals().call()
+        else:
+            decimals = decimals_mapping.get(reward_token.lower(), 18)
+        annual_token_emission = rewarder_contract.functions.tokenPerSec().call() * 10**-decimals * 3600 * 24 * 365
         price_token = calculate_lp_token_price(self._web3, self._blockchain, reward_token)
-        lp_token_price = self._pool_address(i, pool_info_complete)
+        lp_token_price = calculate_lp_token_price(self._web3, self._blockchain, self._pool_address(i, pool_info_complete))
         total_staked = self._total_staked(i, pool_info_complete)
-        pool_emission_share = self._alloc_point(i, pool_info_complete) / self.dapp_token_total_alloc(self._web3)
-        pool_reward_amount_per_year = annual_token_emission * pool_emission_share
+        pool_reward_amount_per_year = annual_token_emission
         pool_reward_value_per_year = price_token * pool_reward_amount_per_year
         total_value_locked = max(1, total_staked * lp_token_price)
         apr = ((pool_reward_value_per_year/total_value_locked))*100
-        return symbol, apr
+        return [(symbol, apr)]

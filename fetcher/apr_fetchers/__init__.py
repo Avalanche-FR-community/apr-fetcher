@@ -10,6 +10,7 @@ from .yetiswap_fetcher import YetiswapAPRFetcher
 from .stakedao_fetcher import StakeDAOAPRFetcher
 from .pangolinv2_fetcher import PangolinV2APRFetcher
 from .traderjoe_fetcher import TraderjoeAPRFetcher
+from .axial_fetcher import AxialAPRFetcher
 
 fetchers = {
     # "yieldyak": YieldYakAPRFetcher(),
@@ -20,6 +21,7 @@ fetchers = {
     # "yetiswap": YetiswapAPRFetcher(),
     # "stakedao": StakeDAOAPRFetcher(),
     # "pangolin": PangolinV2APRFetcher(),
-    "traderjoe": TraderjoeAPRFetcher(),
-    # "snowball": SnowballAPRFetcher()
+    # "traderjoe": TraderjoeAPRFetcher(),
+    # "axial": AxialAPRFetcher()
+    "snowball": SnowballAPRFetcher()
 }
