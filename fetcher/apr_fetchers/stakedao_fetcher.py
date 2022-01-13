@@ -35,7 +35,7 @@ class StakeDAOAPRFetcher(DappAPRFetcher):
         token_per_year = self._staking_reward.functions.rewardData(self._web3.toChecksumAddress(self.dapp_token_address(web3))).call()[3] * 10**(-decimals) * 3600 * 24 * 365
         return token_per_year
 
-    def dapp_token_total_alloc(self, web3) -> List[Dict[str, Union[str, float]]]:
+    def dapp_token_total_alloc(self, web3) -> int:
         return len(self._pools.keys())
 
     def dapp_token_price(self, web3) -> float:

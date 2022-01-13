@@ -46,7 +46,7 @@ class YetiswapAPRFetcher(DappAPRFetcher):
         token_per_year = sum([p_contract.functions.rewardRate().call() for p_contract in self._pools.values()]) * 10**(-decimals) * 3600 * 24 * 365
         return token_per_year
 
-    def dapp_token_total_alloc(self, web3) -> List[Dict[str, Union[str, float]]]:
+    def dapp_token_total_alloc(self, web3) -> int:
         return sum([self._liqpoolmanager_contract.functions.rewardAmount(self._web3.toChecksumAddress(p)).call() for p, p_contract in self._pools.items()])
 
     def dapp_token_price(self, web3) -> float:

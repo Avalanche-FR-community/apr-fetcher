@@ -55,7 +55,7 @@ class SnowballAPRFetcher(DappAPRFetcher):
             weight = self._gauges_contract.functions.weights(self._web3.toChecksumAddress(p)).call()
             pool_contract = open_contract(self._web3, self._blockchain, p)
             decimals_supply = pool_contract.functions.decimals().call()
-            ratio = 1.0/(pool_contract.functions.getRatio().call() * 10**-18)
+            ratio = (pool_contract.functions.getRatio().call() * 10**-18)
             gauge_address = self._gauges_contract.functions.gauges(self._web3.toChecksumAddress(p)).call()
             pools_infos.append(
                 {
@@ -74,7 +74,7 @@ class SnowballAPRFetcher(DappAPRFetcher):
         token_per_year = sum([p_contract.functions.rewardRate().call() for p_contract in self._pools.values()]) * 10**(-decimals) * 3600 * 24 * 365
         return token_per_year
 
-    def dapp_token_total_alloc(self, web3) -> List[Dict[str, Union[str, float]]]:
+    def dapp_token_total_alloc(self, web3) -> int:
         return self._total_weight
 
     def dapp_token_price(self, web3) -> float:
@@ -86,7 +86,11 @@ class SnowballAPRFetcher(DappAPRFetcher):
         p = keys[i]
         pool_contract = open_contract(self._web3, self._blockchain, p)
         gauge_address = self._gauges_contract.functions.gauges(self._web3.toChecksumAddress(p)).call()
-        # print(pool_contract.functions.balanceOf(self._web3.toChecksumAddress(gauge_address)).call())
-        # print(pool_contract.functions.decimals().call())
-        # print(self._gauges_contract.functions.gauges(self._web3.toChecksumAddress(keys[i])).call())
+        """
+        print(p)
+        print(pool_contract.functions.balanceOf(self._web3.toChecksumAddress(gauge_address)).call())
+        print(pool_contract.functions.decimals().call())
+        print((pool_contract.functions.getRatio().call() * 10**-18))
+        print(self._gauges_contract.functions.gauges(self._web3.toChecksumAddress(keys[i])).call())
+        """
         return []

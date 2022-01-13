@@ -40,7 +40,7 @@ class BoofiAPRFetcher(DappAPRFetcher):
         decimals = self._token_contract.functions.decimals().call()
         return self._cauldron_contract.functions.zboofiPerSecond().call() * 10**(-decimals) * 3600 * 24 * 365
 
-    def dapp_token_total_alloc(self, web3) -> List[Dict[str, Union[str, float]]]:
+    def dapp_token_total_alloc(self, web3) -> int:
         return sum([p[7]*p[8]*calculate_lp_token_price(self._web3, self._blockchain, token_address) for token_address, p in self._pools.items()])
 
     def dapp_token_price(self, web3) -> float:

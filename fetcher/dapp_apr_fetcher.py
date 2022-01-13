@@ -35,7 +35,7 @@ class DappAPRFetcher(APRFetcher):
         raise NotImplementedError()
 
     @abstractmethod
-    def dapp_token_total_alloc(self, web3) -> List[Dict[str, Union[str, float]]]:
+    def dapp_token_total_alloc(self, web3) -> int:
         raise NotImplementedError()
 
     @abstractmethod
@@ -103,7 +103,7 @@ class DappAPRFetcher(APRFetcher):
             apr = ((pool_reward_value_per_year/total_value_locked))*100
             token_symbol_tuple = (token0_symbol+"/"+token1_symbol if token0_symbol != token1_symbol else token0_symbol) + (f"({platform})" if platform != "" else "")
             additional_aprs = self.additional_aprs(i, pool_info)
-            # print(token_symbol_tuple, pool_address, total_staked, LPToken_price, total_value_locked, apr)
+            # print(token_symbol_tuple, pool_address, pool_reward_amount_per_year, alloc_point, total_staked, LPToken_price, total_value_locked, apr)
             dict_farm = {
                 "pair": token_symbol_tuple,
                 "apr": apr,

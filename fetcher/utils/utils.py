@@ -70,7 +70,8 @@ symbol_mapping = {
     "0x346a59146b9b4a77100d369a3d18e8007a9f46a6": "AVAI",
     "0x9e3ca00f2d4a9e5d4f0add0900de5f15050812cf": "NFTD",
     "0xf891214fdcf9cdaa5fdc42369ee4f27f226adad6": "IME",
-    "0xe0ce60af0850bf54072635e66e79df17082a1109": "ICE"
+    "0xe0ce60af0850bf54072635e66e79df17082a1109": "ICE",
+    "0x78c42324016cd91d1827924711563fb66e33a83a": "RELAY"
 }
 
 price_mapping = {}
@@ -104,6 +105,17 @@ particular_case_lp_tokens_price = {
             "0x26694e4047eA77cC96341f0aC491773aC5469d72", "getTokenBalance", "getToken", "0xA57E0D32Aa27D3b1D5AFf6a8A786C6A4DADb818F"
         )
     }
+}
+
+qitoken_mapping = {
+    "0x5c0401e81bc07ca70fad469b451682c0d747ef1c": "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
+    "0xe194c4c5ac32a3c9ffdb358d9bfd523a0b6d1568": "0x50b7545627a5162f82a992c33b87adc75187b218",
+    "0x334ad834cd4481bb02d09615e7c11a00579a7909": "0x49d5c2bdffac6ce2bfdb6640f4f80f226bc10bab",
+    "0xc9e5999b8e75c3feb117f6f73e664b9f3c8ca65c": "0xc7198437980c041c805a1edcba50c1ce5db95118",
+    "0x4e9f683a27a6bdad3fc2764003759277e93696e6": "0x5947bb275c521040051d82396192181b413227a3",
+    "0x835866d37afb8cb8f8334dccdaf66cf01832ff5d": "0xd586e7f844cea2f87f50152665bcbc2c279d8d70",
+    "0xbeb5d47a3f720ec0a390d04b4d41ed7d9688bc7f": "0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664",
+    "0x35bd6aeda81a7e5fc7a7832490e71f757b0cd9ce": "0x8729438eb15e2c8b576fcc6aecda6a148776c0f5"
 }
 
 
@@ -171,10 +183,12 @@ def calculate_token_price(web3, blockchain, pool_address, source_token_address, 
         token1_decimals = token1.functions.decimals().call()
     except:
         token1_decimals = decimals_mapping.get(token1_address.lower(), 18)
-    if token0_address == source_token_address:
+    if token0_address.lower() == source_token_address.lower():
         price = (reserve_token1 * 10**-token1_decimals) / (reserve_token0 * 10**-token0_decimals)
-    else :
+    elif token1_address.lower() == source_token_address.lower() :
         price = (reserve_token0 * 10**-token0_decimals) / (reserve_token1 * 10**-token1_decimals)
+    else:
+        price = -1
     return price
 
 
@@ -221,9 +235,9 @@ def calculate_lp_token_price(web3, blockchain, pool_address, opened_contract=Non
 
 def get_token_price_from_dexs(web3, blockchain, token_address, exclude_others_blockchains = []):
     global price_mapping
-    if token_address in price_mapping:
-        return price_mapping[token_address]
-    if token_address == usdt_address[blockchain]:
+    if token_address.lower() in price_mapping:
+        return price_mapping[token_address.lower()]
+    if token_address.lower() == usdt_address[blockchain]:
         return 1
     contracts = {}
     prices = []
@@ -237,7 +251,7 @@ def get_token_price_from_dexs(web3, blockchain, token_address, exclude_others_bl
             if price != -1:
                 prices.append(price)
                 weight_pools.append(sum(open_contract(web3, blockchain, pair_address).functions.getReserves().call()[:-1]))
-    if token_address != blockchain_native_token_address[blockchain]:
+    if token_address.lower() != blockchain_native_token_address[blockchain]:
         # Try with native blockchain token
         for dex_factory_key, dex_factory in dex_factories[blockchain].items():
             dex_factory_contract = contracts[dex_factory_key]

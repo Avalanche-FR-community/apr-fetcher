@@ -1,5 +1,6 @@
 
-from fetcher.apr_fetchers.traderjoe_fetcher import TraderjoeAPRFetcher
+from .benqi_fetcher import BenQIAPRFetcher
+from .traderjoe_fetcher import TraderjoeAPRFetcher
 from .snowball_fetcher import SnowballAPRFetcher
 from .yieldyak_fetcher import YieldYakAPRFetcher
 from .beefy_fetcher import BeefyAPRFetcher
@@ -13,15 +14,16 @@ from .traderjoe_fetcher import TraderjoeAPRFetcher
 from .axial_fetcher import AxialAPRFetcher
 
 fetchers = {
-    # "yieldyak": YieldYakAPRFetcher(),
-    # "beefy": BeefyAPRFetcher(),
-    # "alpha_homora_v1": AlphaHomoraAPRFetcher(),
-    # "boofi": BoofiAPRFetcher(),
-    # "swift": SwiftAPRFetcher(),
-    # "yetiswap": YetiswapAPRFetcher(),
-    # "stakedao": StakeDAOAPRFetcher(),
-    # "pangolin": PangolinV2APRFetcher(),
-    # "traderjoe": TraderjoeAPRFetcher(),
-    # "axial": AxialAPRFetcher()
-    "snowball": SnowballAPRFetcher()
+    "yieldyak": YieldYakAPRFetcher(),
+    "beefy": BeefyAPRFetcher(),
+    "alpha_homora_v1": AlphaHomoraAPRFetcher(),
+    "boofi": BoofiAPRFetcher(),
+    "swift": SwiftAPRFetcher(),
+    "yetiswap": YetiswapAPRFetcher(),
+    "stakedao": StakeDAOAPRFetcher(),
+    "pangolin": PangolinV2APRFetcher(),
+    "traderjoe": TraderjoeAPRFetcher(),
+    "axial": AxialAPRFetcher(),
+    "snowball": SnowballAPRFetcher(),
+    "benqi": BenQIAPRFetcher()
 }
