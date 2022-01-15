@@ -3,7 +3,10 @@ import requests
 
 from web3.main import Web3
 
-from fetcher.apr_fetchers.pangolinv2_fetcher import PangolinV2APRFetcher
+from .pangolinv2_fetcher import PangolinV2APRFetcher
+from .traderjoe_fetcher import TraderjoeAPRFetcher
+from .lydia_fetcher import LydiaAPRFetcher
+from .axial_fetcher import AxialAPRFetcher
 from ..utils.utils import calculate_lp_token_price, get_block_average_time, open_contract, blockchain_urls, get_token_price_from_dexs, decimals_mapping
 from ..dapp_apr_fetcher import DappAPRFetcher
 from pprint import pprint
@@ -59,7 +62,7 @@ class SnowballAPRFetcher(DappAPRFetcher):
             gauge_address = self._gauges_contract.functions.gauges(self._web3.toChecksumAddress(p)).call()
             pools_infos.append(
                 {
-                    "total_staked": pool_contract.functions.balanceOf(self._web3.toChecksumAddress(gauge_address)).call() * 10**-decimals_supply * ratio,
+                    "total_staked": pool_contract.functions.balance().call() * 10**-decimals_supply,
                     "pool_address": pool_contract.functions.token().call(),
                     "alloc_point": weight,
                 }
@@ -81,11 +84,17 @@ class SnowballAPRFetcher(DappAPRFetcher):
         return get_token_price_from_dexs(web3, self._blockchain, self.dapp_token_address(web3))
 
     def additional_aprs(self, i: int, pool_info: Dict[str, Union[float, int, str]]) -> List[Tuple[str, float]]:
-        # pangolin_fetcher = PangolinV2APRFetcher()
+        """
         keys = list(self._pools.keys())
         p = keys[i]
+        
         pool_contract = open_contract(self._web3, self._blockchain, p)
         gauge_address = self._gauges_contract.functions.gauges(self._web3.toChecksumAddress(p)).call()
+        traderjoe_fetch = TraderjoeAPRFetcher()
+        pangolin_fetch = PangolinV2APRFetcher()
+        lydia_fetch = LydiaAPRFetcher()
+        axial_fetch = AxialAPRFetcher()
+        """
         """
         print(p)
         print(pool_contract.functions.balanceOf(self._web3.toChecksumAddress(gauge_address)).call())
